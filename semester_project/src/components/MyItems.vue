@@ -7,7 +7,7 @@
         <v-btn
           class="ma-2 new_item_button"
           size="large"
-          @click="$emit('new-item')"
+          @click="$emit('go-to-page-one')"
         >
           + Opret genstand
         </v-btn>

@@ -100,9 +100,13 @@ export default {
           maxLoanPeriod:
             this.maxLoanPeriod === "Andet" ? this.customLoanPeriod : this.maxLoanPeriod,
         };
-        this.$emit("save-details", details);
+        this.$emit("save-details", details,);
+        this.$emit("go-to-confirm-item")
       }
     },
+    back() {
+      this.$emit("go-to-page-one");
+    }
   },
 };
 </script>
@@ -287,14 +291,12 @@ export default {
     <v-row>
       <v-col cols="12">
         <div class="fixed-bottom-buttons">
-          <v-btn class="ma-2 back_button" size="large" @click="">
+          <v-btn class="ma-2 back_button" size="large" @click="back">
             Tilbage
           </v-btn>
-          <!-- To do - implementere navigation tilbage til MyItems -->
           <v-btn class="ma-2 next_button" size="large" @click="next">
             Næste
           </v-btn>
-          <!-- To do - implementere navigation videre til bekræftelsesskærm -->
         </div>
       </v-col>
     </v-row>

@@ -1,34 +1,34 @@
 <script>
 export default {
-  name: 'ConfirmItemScreen',
-  emits: ['goBack', 'createItem'],
+  name: "ConfirmItemScreen",
+  emits: ["goBack", "createItem"],
   data() {
     return {
       item: {
         image:
-          'https://images.unsplash.com/photo-1580894908361-967195033215?q=80&w=400&auto=format&fit=crop',
-        name: 'Boremaskine',
-        brand: 'Intet mærke',
-        category: 'Elektronik',
-        condition: 'Ny',
-        loanPeriod: '3 dage',
-        accessories: 'Intet tilbehør tilføjet',
+          "https://images.unsplash.com/photo-1580894908361-967195033215?q=80&w=400&auto=format&fit=crop",
+        name: "Boremaskine",
+        brand: "Intet mærke",
+        category: "Elektronik",
+        condition: "Ny",
+        loanPeriod: "3 dage",
+        accessories: "Intet tilbehør tilføjet",
       },
-    }
+    };
   },
   computed: {
     fields() {
       return [
-        { label: 'Navn', value: this.item.name },
-        { label: 'Mærke', value: this.item.brand },
-        { label: 'Kategori', value: this.item.category },
-        { label: 'Stand', value: this.item.condition },
-        { label: 'Max låneperiode', value: this.item.loanPeriod },
-        { label: 'Tilbehør', value: this.item.accessories },
-      ]
+        { label: "Navn", value: this.item.name },
+        { label: "Mærke", value: this.item.brand },
+        { label: "Kategori", value: this.item.category },
+        { label: "Stand", value: this.item.condition },
+        { label: "Max låneperiode", value: this.item.loanPeriod },
+        { label: "Tilbehør", value: this.item.accessories },
+      ];
     },
   },
-}
+};
 </script>
 
 <template>
@@ -40,7 +40,9 @@ export default {
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
 
-        <v-toolbar-title class="text-center font-weight-bold"> Opret ny genstand </v-toolbar-title>
+        <v-toolbar-title class="text-center font-weight-bold">
+          Opret ny genstand
+        </v-toolbar-title>
 
         <div style="width: 40px"></div>
       </v-toolbar>
@@ -77,7 +79,8 @@ export default {
       <v-card-text class="px-5 pt-2 pb-8 text">
         <h2 class="text-h6 font-weight-bold mb-1">Tjek og bekræft</h2>
         <p class="text-body-2 text-medium-emphasis mb-5 text-body">
-          Se hvordan din genstand vil se ud for andre. Du kan redigere alle felter direkte.
+          Se hvordan din genstand vil se ud for andre. Du kan redigere alle
+          felter direkte.
         </p>
 
         <!-- Images -->
@@ -85,7 +88,13 @@ export default {
 
         <div class="image-row mb-5">
           <div class="image-preview">
-            <v-img :src="item.image" cover width="72" height="72" class="rounded-lg" />
+            <v-img
+              :src="item.image"
+              cover
+              width="72"
+              height="72"
+              class="rounded-lg"
+            />
             <v-btn icon size="x-small" color="grey-darken-1" class="remove-btn">
               <v-icon size="14">mdi-close</v-icon>
             </v-btn>
@@ -113,7 +122,9 @@ export default {
               </div>
 
               <v-btn icon variant="text" size="small">
-                <v-icon size="16" color="grey-darken-1">mdi-pencil-outline</v-icon>
+                <v-icon size="16" color="grey-darken-1"
+                  >mdi-pencil-outline</v-icon
+                >
               </v-btn>
             </v-card-text>
           </v-card>
@@ -133,7 +144,12 @@ export default {
           Tilbage
         </v-btn>
 
-        <v-btn color="#389475" rounded="lg" class="create-button" @click="$emit('createItem')">
+        <v-btn
+          color="#389475"
+          rounded="lg"
+          class="create-button"
+          @click="$emit('createItem')"
+        >
           Opret genstand
         </v-btn>
       </div>
@@ -279,11 +295,11 @@ export default {
   text-transform: none;
 }
 .text {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   color: #000000;
 }
 .text-body {
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   color: grey;
 }
 </style>
