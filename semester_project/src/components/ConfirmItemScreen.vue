@@ -32,8 +32,8 @@ export default {
 </script>
 
 <template>
-  <v-container fluid class="pa-0 preview-page">
-    <v-card flat class="mx-auto preview-card">
+  <v-container class="pa-4">
+    <v-card flat class="preview-card">
       <!-- Top bar -->
       <v-toolbar flat color="white" class="top-toolbar">
         <v-btn icon variant="text" @click="$emit('goBack')">
@@ -159,15 +159,17 @@ export default {
 
 <style scoped>
 .preview-page {
+  padding: 16px;
   background: #f5f5f5;
-  min-height: 100vh;
 }
 
 .preview-card {
   width: 100%;
-  max-width: 390px;
-  min-height: 100vh;
   background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: none;
+  min-height: auto;
 }
 
 .top-toolbar {

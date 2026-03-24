@@ -70,6 +70,12 @@ export default {
         @save-details="handleSaveDetails"
         @go-to-confirm-item="goToConfirmItem"
       />
+
+      <ConfirmItemScreen
+        v-if="currentPage === 'confirmItem'"
+        @goBack="goToAddDetails"
+        @createItem="goToItems"
+      />
     </v-main>
 
     <v-btn

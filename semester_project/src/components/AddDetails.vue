@@ -113,9 +113,6 @@ export default {
 
 
 <template>
-
-
-
   <v-container>
     <h1 class="mt-15 mb-2">Tilbehør og detaljer</h1>
     <p>
