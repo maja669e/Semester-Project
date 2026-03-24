@@ -2,7 +2,7 @@
   <v-app>
     <v-main>
       <HelloWorld />
-        <PageOne />
+      <PageOne />
     </v-main>
     <v-btn
       class="ma-2"
@@ -16,5 +16,7 @@
 
 <script lang="ts" setup>
   import HelloWorld from '@/components/HelloWorld.vue'
+  import PageOne from '@/components/PageOne.vue'
+
   
 </script>
