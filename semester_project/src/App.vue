@@ -2,6 +2,7 @@
   <v-app>
     <v-main>
       <HelloWorld />
+        <PageOne />
     </v-main>
     <v-btn
       class="ma-2"
