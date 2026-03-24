@@ -37,20 +37,8 @@ export default {
 <template>
   <v-app>
     <v-main>
-      <!-- Page navigation -->
-      <Home v-if="currentPage === 'home'" @go-to-items="goToItems" />
-
-      <MyItems
-        v-if="currentPage === 'items'"
-        @go-to-home="goHome"
-        @new-item="goToAddDetails"
-      />
-
-      <AddDetails
-        v-if="currentPage === 'addDetails'"
-        @go-to-home="goHome"
-        @save-details="handleSaveDetails"
-      />
+      <HelloWorld />
+      <PageOne />
     </v-main>
 
     <v-btn
@@ -70,3 +58,8 @@ export default {
     />
   </v-app>
 </template>
+
+<script lang="ts" setup>
+import HelloWorld from "@/components/HelloWorld.vue";
+import PageOne from "@/components/PageOne.vue";
+</script>
