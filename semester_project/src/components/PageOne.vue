@@ -14,9 +14,17 @@ export default {
   },
   data() {
     return {
-      selectedCategory: null,
+       selectedCategory: null,
+    customCategory: "",
+    uploadedImages: [],
+    itemName: "",
+
+    errors: {
+      uploadedImages: "",
+      selectedCategory: "",
       customCategory: "",
-      uploadedImages: [],
+      itemName: "",
+      }
     };
   },
   watch: {
@@ -64,6 +72,58 @@ export default {
     cancel() {
       this.$emit("go-to-items");
     },
+
+     validate() {
+  let valid = true;
+
+  // Images
+  if (this.uploadedImages.length === 0) {
+    this.errors.uploadedImages = "Tilføj mindst ét billede";
+    valid = false;
+  } else {
+    this.errors.uploadedImages = "";
+  }
+
+  // Category
+  if (!this.selectedCategory) {
+    this.errors.selectedCategory = "Vælg en kategori";
+    valid = false;
+  } else {
+    this.errors.selectedCategory = "";
+  }
+
+  // Custom category
+  if (this.selectedCategory === "Andet" && this.customCategory.trim() === "") {
+    this.errors.customCategory = "Indtast en kategori";
+    valid = false;
+  } else {
+    this.errors.customCategory = "";
+  }
+
+  // Item name
+  if (!this.itemName.trim()) {
+    this.errors.itemName = "Indtast et navn på din genstand";
+    valid = false;
+  } else {
+    this.errors.itemName = "";
+  }
+
+  return valid;
+},
+      /*  Gem detaljer og gå videre til næste skridt */
+    next() {
+     if (this.validate()) {
+    const data = {
+      category:
+        this.selectedCategory === "Andet"
+          ? this.customCategory
+          : this.selectedCategory,
+      images: this.uploadedImages,
+      name: this.itemName,
+    };
+
+    this.$emit("go-to-add-details", data);
+  }}
   },
 };
 </script>
@@ -94,6 +154,7 @@ export default {
 
     <div class="addPhoto">
       <h3>Billeder*</h3>
+   
       <!-- Upload photo https://medium.com/swlh/drop-and-click-file-upload-with-vuetifyjs-f2c2a8357377 -->
       <v-card
         class="upload-card d-flex flex-column align-center justify-center text-center"
@@ -123,7 +184,9 @@ export default {
           @change="handleFiles"
         />
       </v-card>
-
+<div v-if="errors.uploadedImages" class="error-text">
+  {{ errors.uploadedImages }}
+</div>
       <!-- Preview uploaded images -->
       <div class="uploaded-images mt-4" v-if="uploadedImages.length">
         <v-img
@@ -140,6 +203,9 @@ export default {
     <!-- Category selection -->
     <div>
       <h3>Kategori*</h3>
+       <div v-if="errors.selectedCategory" class="error-text">
+         {{ errors.selectedCategory }}
+        </div>
       <v-btn-toggle
         v-model="selectedCategory"
         class="category-toggle d-flex flex-wrap ga-2"
@@ -156,6 +222,7 @@ export default {
         >
         <v-btn value="Andet" rounded="xl" variant="#eeece8">Andet</v-btn>
       </v-btn-toggle>
+      
 
       <v-text-field
         v-if="selectedCategory === 'Andet'"
@@ -167,9 +234,17 @@ export default {
         rounded="xl"
         clearable
       />
+      <div v-if="errors.customCategory" class="error-text">
+  {{ errors.customCategory }}
+</div>
+     
 
       <h3>Navn på genstand*</h3>
+      <div v-if="errors.itemName" class="error-text">
+  {{ errors.itemName }}
+</div>
       <v-text-field
+        v-model="itemName"
         label="Hvad er det for en genstand?"
         class="mt-4"
         color="#389475"
@@ -270,5 +345,11 @@ export default {
 .create-button {
   flex: 3;
   text-transform: none;
+}
+
+.error-text {
+  color: red;
+  font-size: 14px;
+  margin-top: 4px;
 }
 </style>
