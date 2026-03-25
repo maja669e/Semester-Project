@@ -429,8 +429,6 @@ export default {
 }
 
 .bottom-bar {
-  position: sticky;
-  bottom: 0;
   background: white;
   border-top: 1px solid #e5e7eb;
   padding: 12px 16px;
