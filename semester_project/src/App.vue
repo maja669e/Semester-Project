@@ -29,7 +29,7 @@ export default {
       this.currentPage = "home";
     },
     goToItems() {
-      this.currentPage = "items";
+      this.currentPage = "genstandPage";
     },
     goToPageOne() {
       this.currentPage = "pageOne";
@@ -92,7 +92,10 @@ export default {
         @goToGenstandPage="goToGenstandPage"
       />
 
-      <GenstandPage v-if="currentPage === 'genstandPage'" @go-to-page-one="goToPageOne" />
+      <GenstandPage
+        v-if="currentPage === 'genstandPage'"
+        @go-to-page-one="goToPageOne"
+      />
     </v-main>
 
     <v-btn
