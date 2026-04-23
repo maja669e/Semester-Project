@@ -14,10 +14,11 @@ export default {
   },
   data() {
     return {
-       selectedCategory: null,
+    selectedCategory: null,
     customCategory: "",
     uploadedImages: [],
     itemName: "",
+    brand: "",
 
     errors: {
       uploadedImages: "",
@@ -59,16 +60,7 @@ export default {
         reader.readAsDataURL(file);
       });
     },
-    next() {
-      const data = {
-        category:
-          this.selectedCategory === "Andet"
-            ? this.customCategory
-            : this.selectedCategory,
-        images: this.uploadedImages,
-      };
-      this.$emit("go-to-add-details", data);
-    },
+ 
     cancel() {
       this.$emit("go-to-items");
     },
@@ -120,6 +112,7 @@ export default {
           : this.selectedCategory,
       images: this.uploadedImages,
       name: this.itemName,
+      brand: this.brand
     };
 
     this.$emit("go-to-add-details", data);
@@ -254,6 +247,7 @@ export default {
 
       <h3>Mærke</h3>
       <v-text-field
+      v-model="brand"
         label="F.eks. Bosch, Apple..."
         class="mt-4"
         color="var(--color-primary)"

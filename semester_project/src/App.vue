@@ -21,7 +21,16 @@ export default {
     return {
       currentPage: "home",
       currentStep: 1,
-      itemDetails: null,
+      itemDetails: {
+  name: "",
+  brand: "",
+  category: "",
+  images: [],
+  condition: "",
+  loanPeriod: "",
+  extras: [],
+
+},
     };
   },
   methods: {
@@ -35,16 +44,24 @@ export default {
       this.currentPage = "pageOne";
       this.currentStep = 1;
     },
-    goToAddDetails(data) {
-      console.log("PageOne data:", data);
-      this.currentPage = "addDetails";
-      this.currentStep = 2;
-    },
-    handleSaveDetails(details) {
-      this.itemDetails = details;
-      console.log("Saved:", details);
-      this.currentPage = "items"; //Change to next page when implemented
-    },
+goToAddDetails(data) {
+  console.log("PageOne data:", data);
+
+  this.itemDetails.name = data.name || "";
+  this.itemDetails.category = data.category || "";
+  this.itemDetails.images = data.images || [];
+  this.itemDetails.brand = data.brand || "";
+
+  this.currentPage = "addDetails";
+  this.currentStep = 2;
+},
+handleSaveDetails(details) {
+  this.itemDetails.condition = details.condition || "";
+  this.itemDetails.loanPeriod = details.maxLoanPeriod || "";
+  this.itemDetails.extras = details.extras || [];
+
+  console.log("Saved:", this.itemDetails);
+},
     goToConfirmItem() {
       this.currentPage = "confirmItem";
       this.currentStep = 3;
@@ -83,14 +100,14 @@ export default {
         @save-details="handleSaveDetails"
         @go-to-confirm-item="goToConfirmItem"
       />
-
-      <ConfirmItemScreen
-        v-if="currentPage === 'confirmItem'"
-        :currentStep="currentStep"
-        @goBack="goToAddDetails"
-        @createItem="goToItems"
-        @goToGenstandPage="goToGenstandPage"
-      />
+<ConfirmItemScreen
+  v-if="currentPage === 'confirmItem'"
+  :currentStep="currentStep"
+  :item="itemDetails"
+  @goBack="goToAddDetails"
+  @createItem="goToItems"
+  @goToGenstandPage="goToGenstandPage"
+/>
 
       <GenstandPage
         v-if="currentPage === 'genstandPage'"

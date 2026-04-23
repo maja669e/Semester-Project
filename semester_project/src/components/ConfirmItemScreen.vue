@@ -7,38 +7,45 @@ export default {
   components: {
     Stepper,
   },
-  props: {
-    currentStep: {
-      type: Number,
-      default: 1,
-    },
+props: {
+  currentStep: {
+    type: Number,
+    default: 1,
   },
+ item: {
+  type: Object,
+  default: () => ({
+    images: [],
+    extras: [],
+    name: "",
+    category: "",
+    condition: "",
+    loanPeriod: "",
+  }),
+},
+},
   data() {
     return {
-      item: {
-        image:
-          "https://images.unsplash.com/photo-1580894908361-967195033215?q=80&w=400&auto=format&fit=crop",
-        name: "Boremaskine",
-        brand: "Intet mærke",
-        category: "Elektronik",
-        condition: "Ny",
-        loanPeriod: "3 dage",
-        accessories: "Intet tilbehør tilføjet",
-      },
+     
     };
   },
-  computed: {
-    fields() {
-      return [
-        { label: "Navn", value: this.item.name },
-        { label: "Mærke", value: this.item.brand },
-        { label: "Kategori", value: this.item.category },
-        { label: "Stand", value: this.item.condition },
-        { label: "Max låneperiode", value: this.item.loanPeriod },
-        { label: "Tilbehør", value: this.item.accessories },
-      ];
+ computed: {
+fields() {
+  return [
+    { label: "Navn", value: this.item?.name || "" },
+    { label: "Kategori", value: this.item?.category || "" },
+    { label: "Mærke", value: this.item?.brand || "" },
+    { label: "Stand", value: this.item?.condition || "" },
+    { label: "Max låneperiode", value: this.item?.loanPeriod || "" },
+    {
+      label: "Tilbehør",
+      value: this.item?.extras?.length
+        ? this.item.extras.join(", ")
+        : "Intet tilbehør",
     },
-  },
+  ];
+},
+},
 };
 </script>
 
@@ -71,27 +78,50 @@ export default {
         </p>
 
         <!-- Images -->
-        <div class="section-title mb-3">Billeder</div>
+    
+<div class="section-title mb-3">Billeder</div>
 
-        <div class="image-row mb-5">
-          <div class="image-preview">
-            <v-img
-              :src="item.image"
-              cover
-              width="72"
-              height="72"
-              class="rounded-lg"
-            />
-            <v-btn icon size="x-small" color="grey-darken-1" class="remove-btn">
-              <v-icon size="14">mdi-close</v-icon>
-            </v-btn>
-          </div>
+<div class="image-row mb-5">
 
-          <div class="add-image-box">
-            <v-icon size="18" color="grey">mdi-camera-outline</v-icon>
-            <span>Tilføj</span>
-          </div>
-        </div>
+  <div v-if="item?.images?.length">
+
+    <div
+      v-for="(img, index) in item.images"
+      :key="index"
+      class="image-preview"
+    >
+      <v-img
+        :src="img"
+        cover
+        width="72"
+        height="72"
+        class="rounded-lg"
+      />
+
+      <v-btn
+        icon
+        size="x-small"
+        color="grey-darken-1"
+        class="remove-btn"
+      >
+        <v-icon size="14">mdi-close</v-icon>
+      </v-btn>
+
+    </div>
+
+  </div>
+
+  <div v-else class="text-grey">
+    Ingen billeder valgt
+  </div>
+
+  <div class="add-image-box">
+    <v-icon size="18" color="grey">mdi-camera-outline</v-icon>
+    <span>Tilføj</span>
+  </div>
+
+</div>
+
 
         <!-- Info cards -->
         <div class="info-list">
