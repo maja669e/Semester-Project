@@ -1,5 +1,6 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
+import { createItem, createAccessory } from "../services/itemservice.js";
 
 export default {
   name: "ConfirmItemScreen",
@@ -7,167 +8,198 @@ export default {
   components: {
     Stepper,
   },
-props: {
-  currentStep: {
-    type: Number,
-    default: 1,
+  props: {
+    currentStep: {
+      type: Number,
+      default: 1,
+    },
+    item: {
+      type: Object,
+      default: () => ({
+       /* images: [],*/
+        extras: [],
+        name: "",
+        category: "",
+        condition: "",
+        loanPeriod: "",
+      }),
+    },
   },
- item: {
-  type: Object,
-  default: () => ({
-    images: [],
-    extras: [],
-    name: "",
-    category: "",
-    condition: "",
-    loanPeriod: "",
-  }),
-},
-},
   data() {
     return {
-     
+      loading: false,
+      error: null,
     };
   },
- computed: {
-fields() {
-  return [
-    { label: "Navn", value: this.item?.name || "" },
-    { label: "Kategori", value: this.item?.category || "" },
-    { label: "Mærke", value: this.item?.brand || "" },
-    { label: "Stand", value: this.item?.condition || "" },
-    { label: "Max låneperiode", value: this.item?.loanPeriod || "" },
-    {
-      label: "Tilbehør",
-      value: this.item?.extras?.length
-        ? this.item.extras.join(", ")
-        : "Intet tilbehør",
+  computed: {
+    fields() {
+      return [
+        { label: "Navn", value: this.item?.name || "" },
+        { label: "Kategori", value: this.item?.category || "" },
+        { label: "Mærke", value: this.item?.brand || "" },
+        { label: "Stand", value: this.item?.condition || "" },
+        { label: "Max låneperiode", value: this.item?.loanPeriod || "" },
+        {
+          label: "Tilbehør",
+          value: this.item?.extras?.length
+            ? this.item.extras.join(", ")
+            : "Intet tilbehør",
+        },
+      ];
     },
-  ];
-},
-},
+  },
+  methods: {
+    // Konverter låneperiode tekst til dage
+    convertLoanPeriodToDays(period) {
+      const map = {
+        "1 dag": 1,
+        "3 dage": 3,
+        "1 uge": 7,
+        "2 uger": 14,
+        "1 måned": 30,
+      };
+      return map[period] || parseInt(period) || 7;
+    },
+
+    async opretGenstand() {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        // Byg item objekt til API
+        const itemPayload = {
+          ItemName: this.item.name,
+          CategoryID: 1, // TODO: map category navn til ID fra database
+          Brand: this.item.brand || null,
+          Condition: this.item.condition,
+          MaxRentPeriodDays: this.convertLoanPeriodToDays(this.item.loanPeriod),
+          IsActive: true,
+          UserID: 1, // TODO: erstat med logged-in bruger ID
+         /*  images: this.item.images?.map((img, index) => ({
+            ImageURL: img,
+            IsPrimary: index === 0,
+          })) || [] ,*/
+        };
+
+        // POST til API
+        const newItem = await createItem(itemPayload);
+        const newItemId = newItem.ItemID;
+
+        // Opret tilbehør hvis der er nogle
+        if (this.item.extras?.length > 0) {
+          for (const extra of this.item.extras) {
+            await createAccessory({
+              ItemID: newItemId,
+              AccessoryName: extra,
+            });
+          }
+        }
+
+        // Succes - gå til genstand siden
+        this.$emit("goToGenstandPage");
+
+      } catch (err) {
+        this.error = "Noget gik galt. Prøv igen.";
+        console.error("Fejl ved oprettelse af genstand:", err);
+      } finally {
+        this.loading = false;
+      }
+    },
+  },
 };
 </script>
 
 <template>
   <v-container class="pa-4">
-      <!-- Top bar -->
-      <v-toolbar flat color="white" class="top-toolbar">
-        <!--  <v-btn icon variant="text" @click="$emit('goBack')">
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-btn> -->
+    <!-- Top bar -->
+    <v-toolbar flat color="white" class="top-toolbar">
+      <v-toolbar-title class="text-center font-weight-bold">
+        Opret ny genstand
+      </v-toolbar-title>
+      <div style="width: 40px"></div>
+    </v-toolbar>
 
-        <v-toolbar-title class="text-center font-weight-bold">
-          Opret ny genstand
-        </v-toolbar-title>
+    <v-divider />
 
-        <div style="width: 40px"></div>
-      </v-toolbar>
+    <!-- Stepper -->
+    <Stepper :currentStep="currentStep" />
 
-      <v-divider />
+    <!-- Content -->
+    <v-card-text class="px-5 pt-2 pb-8 text">
+      <h2 class="text-h6 font-weight-bold mb-1">Tjek og bekræft</h2>
+      <p class="text-body-2 text-medium-emphasis mb-5 text-body">
+        Se hvordan din genstand vil se ud for andre. Du kan redigere alle
+        felter direkte.
+      </p>
 
-      <!-- Stepper -->
-      <Stepper :currentStep="currentStep" />
+      <!-- Error besked -->
+      <div v-if="error" class="error-text mb-4">{{ error }}</div>
 
-      <!-- Content -->
-      <v-card-text class="px-5 pt-2 pb-8 text">
-        <h2 class="text-h6 font-weight-bold mb-1">Tjek og bekræft</h2>
-        <p class="text-body-2 text-medium-emphasis mb-5 text-body">
-          Se hvordan din genstand vil se ud for andre. Du kan redigere alle
-          felter direkte.
-        </p>
+      <!-- Images -->
+      <div class="section-title mb-3">Billeder</div>
+      <div class="image-row mb-5">
+        <div v-if="item?.images?.length">
+          <div
+            v-for="(img, index) in item.images"
+            :key="index"
+            class="image-preview"
+          >
+            <v-img :src="img" cover width="72" height="72" class="rounded-lg" />
+          </div>
+        </div>
+        <div v-else class="text-grey">Ingen billeder valgt</div>
+        <div class="add-image-box">
+          <v-icon size="18" color="grey">mdi-camera-outline</v-icon>
+          <span>Tilføj</span>
+        </div>
+      </div>
 
-        <!-- Images -->
-    
-<div class="section-title mb-3">Billeder</div>
+      <!-- Info cards -->
+      <div class="info-list">
+        <v-card
+          v-for="field in fields"
+          :key="field.label"
+          variant="outlined"
+          rounded="xl"
+          class="mb-4 info-card"
+        >
+          <v-card-text class="d-flex justify-space-between align-start">
+            <div>
+              <div class="field-label mb-2">{{ field.label }}</div>
+              <div class="field-value">{{ field.value }}</div>
+            </div>
+            <v-btn icon variant="text" size="small">
+              <v-icon size="16" color="grey-darken-1">mdi-pencil-outline</v-icon>
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </div>
+    </v-card-text>
 
-<div class="image-row mb-5">
-
-  <div v-if="item?.images?.length">
-
-    <div
-      v-for="(img, index) in item.images"
-      :key="index"
-      class="image-preview"
-    >
-      <v-img
-        :src="img"
-        cover
-        width="72"
-        height="72"
-        class="rounded-lg"
-      />
-
+    <!-- Bottom buttons -->
+    <div class="bottom-bar">
       <v-btn
-        icon
-        size="x-small"
-        color="grey-darken-1"
-        class="remove-btn"
+        variant="tonal"
+        rounded="lg"
+        color="grey-darken-2"
+        class="back-button"
+        @click="$emit('goBack')"
+        :disabled="loading"
       >
-        <v-icon size="14">mdi-close</v-icon>
+        <v-icon start size="18">mdi-chevron-left</v-icon>
+        Tilbage
       </v-btn>
 
+      <v-btn
+        color="primary"
+        rounded="lg"
+        class="create-button"
+        @click="opretGenstand"
+        :loading="loading"
+      >
+        Opret genstand
+      </v-btn>
     </div>
-
-  </div>
-
-  <div v-else class="text-grey">
-    Ingen billeder valgt
-  </div>
-
-  <div class="add-image-box">
-    <v-icon size="18" color="grey">mdi-camera-outline</v-icon>
-    <span>Tilføj</span>
-  </div>
-
-</div>
-        <!-- Info cards -->
-        <div class="info-list">
-          <v-card
-            v-for="field in fields"
-            :key="field.label"
-            variant="outlined"
-            rounded="xl"
-            class="mb-4 info-card"
-          >
-            <v-card-text class="d-flex justify-space-between align-start">
-              <div>
-                <div class="field-label mb-2">{{ field.label }}</div>
-                <div class="field-value">{{ field.value }}</div>
-              </div>
-
-              <v-btn icon variant="text" size="small">
-                <v-icon size="16" color="grey-darken-1"
-                  >mdi-pencil-outline</v-icon
-                >
-              </v-btn>
-            </v-card-text>
-          </v-card>
-        </div>
-      </v-card-text>
-
-      <!-- Bottom buttons -->
-      <div class="bottom-bar">
-        <v-btn
-          variant="tonal"
-          rounded="lg"
-          color="grey-darken-2"
-          class="back-button"
-          @click="$emit('goBack')"
-        >
-          <v-icon start size="18">mdi-chevron-left</v-icon>
-          Tilbage
-        </v-btn>
-
-        <v-btn
-          color="primary"
-          rounded="lg"
-          class="create-button"
-          @click="$emit('goToGenstandPage')"
-        >
-          Opret genstand
-        </v-btn>
-      </div>
   </v-container>
 </template>
 
