@@ -25,6 +25,16 @@ db.categories = require("./category.model.js")(sequelize, Sequelize);
 db.rentals = require("./rental.model.js")(sequelize, Sequelize);
 
 
+// Item -> ItemImages
+db.items.hasMany(db.itemImages, {
+  foreignKey: "ItemID",
+  as: "images",
+  onDelete: "CASCADE"
+});
+
+db.itemImages.belongsTo(db.items, {
+  foreignKey: "ItemID"
+});
 // Category -> Item
 db.categories.hasMany(db.items, { foreignKey: "CategoryID" });
 db.items.belongsTo(db.categories, { foreignKey: "CategoryID" });
