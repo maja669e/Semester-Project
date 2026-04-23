@@ -1,49 +1,63 @@
 const dbConfig = require("../config/db.config.js");
 
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-  host: dbConfig.HOST,
-  dialect: dbConfig.dialect,
-  operatorsAliases: false,
-  pool: {
-    max: dbConfig.pool.max,
-    min: dbConfig.pool.min,
-    acquire: dbConfig.pool.acquire,
-    idle: dbConfig.pool.idle
+const sequelize = new Sequelize(
+  dbConfig.DB,
+  dbConfig.USER,
+  dbConfig.PASSWORD,
+  {
+    host: dbConfig.HOST,
+    dialect: dbConfig.dialect,
+    pool: dbConfig.pool
   }
-});
+);
 
 const db = {};
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Import models
-//db.teachers = require("./teacher.model.js")(sequelize, Sequelize);
+//IMPORT MODELS
+db.items = require("./item.model.js")(sequelize, Sequelize);
+db.itemImages = require("./itemImage.model.js")(sequelize, Sequelize);
+db.itemAccessories = require("./itemAccessory.model.js")(sequelize, Sequelize);
+db.categories = require("./category.model.js")(sequelize, Sequelize);
+db.rentals = require("./rental.model.js")(sequelize, Sequelize);
 
 
-// ================================
-//   Associations (Relationships)
-// ================================
+// Category -> Item
+db.categories.hasMany(db.items, { foreignKey: "CategoryID" });
+db.items.belongsTo(db.categories, { foreignKey: "CategoryID" });
 
-// 1:N Teacher -> Course
-/*db.teachers.hasMany(db.courses, {
-  foreignKey: "teacherId",
-  as: "courses",
+// Item -> Accessories
+db.items.hasMany(db.itemAccessories, {
+  foreignKey: "ItemID",
+  as: "accessories",
   onDelete: "CASCADE"
 });
-
-db.courses.belongsTo(db.teachers, { foreignKey: "teacherId",  as: "teacher"});
-
-// N:M Student <-> Course
-db.students.belongsToMany(db.courses, {
-  through: db.enrollments,
-  as: "courses"
+db.itemAccessories.belongsTo(db.items, {
+  foreignKey: "ItemID"
 });
 
-db.courses.belongsToMany(db.students, {
-  through: db.enrollments,
-  as: "students"
+// Item -> Rentals
+db.items.hasMany(db.rentals, {
+  foreignKey: "ItemID",
+  as: "rentals",
+  onDelete: "CASCADE"
+});
+db.rentals.belongsTo(db.items, {
+  foreignKey: "ItemID",
+  as: "item"   // 🔥 IMPORTANT for include()
+});
+
+// User -> Rentals
+/*db.users.hasMany(db.rentals, {
+  foreignKey: "RenterUserID"
+});
+db.rentals.belongsTo(db.users, {
+  foreignKey: "RenterUserID",
+  as: "renter"
 });*/
+
 
 module.exports = db;

@@ -1,0 +1,149 @@
+const db = require("../models");
+
+const Item = db.items;
+const ItemImage = db.itemImages;
+
+// CREATE item (optionally with images)
+exports.create = async (req, res) => {
+  try {
+    const item = await Item.create(req.body);
+
+    // If images are included in request
+    if (req.body.images && req.body.images.length > 0) {
+      const images = req.body.images.map(img => ({
+        ...img,
+        ItemID: item.ItemID
+      }));
+
+      await ItemImage.bulkCreate(images);
+    }
+
+    res.send(item);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Error creating Item"
+    });
+  }
+};
+
+// GET all items (with images)
+exports.findAll = async (req, res) => {
+  try {
+    const items = await Item.findAll({
+      include: [
+        {
+          model: ItemImage,
+          as: "images"
+        }
+      ]
+    });
+
+    res.send(items);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message
+    });
+  }
+};
+
+// GET one item by ID (with images)
+exports.findOne = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const item = await Item.findByPk(id, {
+      include: [
+        {
+          model: ItemImage,
+          as: "images"
+        }
+      ]
+    });
+
+    if (item) {
+      res.send(item);
+    } else {
+      res.status(404).send({
+        message: `Cannot find Item with id=${id}`
+      });
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      message: "Error retrieving Item with id=" + id
+    });
+  }
+};
+
+// UPDATE item
+exports.update = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const num = await Item.update(req.body, {
+      where: { ItemID: id }
+    });
+
+    if (num == 1) {
+      res.send({
+        message: "Item was updated successfully."
+      });
+    } else {
+      res.send({
+        message: `Cannot update Item with id=${id}. Maybe not found or empty body`
+      });
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      message: "Error updating Item with id=" + id
+    });
+  }
+};
+
+// DELETE item (images auto-delete via CASCADE)
+exports.delete = async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    const num = await Item.destroy({
+      where: { ItemID: id }
+    });
+
+    if (num == 1) {
+      res.send({
+        message: "Item deleted successfully!"
+      });
+    } else {
+      res.send({
+        message: `Cannot delete Item with id=${id}`
+      });
+    }
+
+  } catch (err) {
+    res.status(500).send({
+      message: "Could not delete Item with id=" + id
+    });
+  }
+};
+
+// DELETE ALL items
+exports.deleteAll = async (req, res) => {
+  try {
+    const nums = await Item.destroy({
+      where: {},
+      truncate: false
+    });
+
+    res.send({
+      message: `${nums} Items deleted successfully`
+    });
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message || "Error deleting all items"
+    });
+  }
+};
