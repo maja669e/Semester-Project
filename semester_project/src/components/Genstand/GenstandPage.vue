@@ -114,7 +114,7 @@ export default {
             <p v-else-if="error" class="error-text" role="alert">{{ error }}</p>
 
             <!-- Liste af filtrerede kort -->
-            <ul class="card-list">
+            <ul v-else class="card-list">
                 <li v-for="item in filteredItems" :key="item.id">
                     <GenstandCard
                         :id="item.id"
