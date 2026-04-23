@@ -70,7 +70,7 @@ export const getAllCategories = async () => {
 
 // Opret tilbehør
 export const createAccessory = async (data) => {
-    const response = await fetch(`${BASE_URL}/api/itemAccessories`, {
+    const response = await fetch(`${BASE_URL}/api/accessories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
