@@ -1,13 +1,13 @@
 <script>
 import PageOne from "./PageOne.vue";
-import PageTwo from "./PageTwo.vue";
-import PageThree from "./PageThree.vue";
+import AddDetails from "./AddDetails.vue";
+import ConfirmItemScreen from "./ConfirmItemScreen.vue";
 
 export default {
   components: {
     PageOne,
-    PageTwo,
-    PageThree,
+    AddDetails,
+    ConfirmItemScreen,
   },
 
   data() {
@@ -56,14 +56,14 @@ export default {
     @go-to-add-details="handlePageOne"
   />
 
-  <PageTwo
+  <AddDetails
     v-if="step === 2"
     :currentStep="2"
     @save-details="handlePageTwo"
     @go-to-confirm-item="step = 3"
     @go-to-page-one="step = 1"
   />
-<PageThree
+<ConfirmItemScreen
   v-if="step === 3 && itemData"
   :currentStep="3"
   :item="itemData"
