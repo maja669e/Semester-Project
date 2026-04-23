@@ -104,7 +104,7 @@ handleSaveDetails(details) {
   v-if="currentPage === 'confirmItem'"
   :currentStep="currentStep"
   :item="itemDetails"
-  @goBack="goToAddDetails"
+  @goBack="currentPage = 'addDetails'"
   @createItem="goToItems"
   @goToGenstandPage="goToGenstandPage"
 />
