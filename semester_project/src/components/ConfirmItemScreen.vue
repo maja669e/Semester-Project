@@ -121,8 +121,6 @@ fields() {
   </div>
 
 </div>
-
-
         <!-- Info cards -->
         <div class="info-list">
           <v-card
