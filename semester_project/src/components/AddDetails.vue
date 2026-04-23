@@ -17,6 +17,7 @@ export default {
       hasExtra: null,
       extrasList: [],
       condition: null,
+      extraName: "",
       maxLoanPeriod: null,
       customLoanPeriod: "",
       errors: {
@@ -36,12 +37,12 @@ export default {
     },
       /* Tilføj ekstra tilbehør til listen  */
     addExtra() {
-      if (this.extraName.trim() !== "") {
-        this.extrasList.push(this.extraName.trim());
-        this.extraName = "";
-        this.errors.extrasList = "";
-      }
-    },
+  if (!this.extraName || this.extraName.trim() === "") return;
+
+  this.extrasList.push(this.extraName.trim());
+  this.extraName = "";
+  this.errors.extrasList = "";
+},
     /* Fjern ekstra tilbehør fra listen  */
     removeExtra(index) {
       this.extrasList.splice(index, 1);
@@ -187,7 +188,7 @@ export default {
             v-model="extraName"
             class="custom_input"
             @keyup.enter="addExtra"
-          ></input>
+          />
 
           <v-btn class="add_button" icon @click="addExtra"> + </v-btn>
         </div>
