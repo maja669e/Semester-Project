@@ -160,11 +160,12 @@ export default {
                 <p class="detalje-ejer-navn">Din genstand</p>
                 <p class="detalje-ejer-dato">Oprettet 12. marts 2026</p>
             </div>
-            <!-- Status tag ved siden af ejer info -->
+            <!-- Status tag ved siden af ejer info 
             <span class="detalje-ejer-status" :class="statusClass">
                 <span class="detalje-status-prik" aria-hidden="true"></span>
                 {{ status }}
             </span>
+            -->
         </section>
 
         <!-- Statistik sektion - kun synlig for ejeren -->
