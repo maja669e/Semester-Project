@@ -1,7 +1,6 @@
 {
   "name": "semester_project",
   "private": true,
-  "type": "module",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
@@ -13,6 +12,11 @@
   "dependencies": {
     "@fontsource/roboto": "^5.2.9",
     "@mdi/font": "7.4.47",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.20.0",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.8",
     "vue": "^3.5.26",
     "vuetify": "^4.0.5"
   },
