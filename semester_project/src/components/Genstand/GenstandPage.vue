@@ -2,6 +2,7 @@
 import GenstandCard from './GenstandCard.vue'
 import GenstandDetail from './GenstandDetail.vue'
 import GenstandFilter from './GenstandFilter.vue'
+import { getAllItems } from '@/services/itemservice.js'
 
 export default {
     name: 'GenstandPage',
@@ -12,55 +13,11 @@ export default {
     },
     data() {
         return {
-            // Holder styr på hvilken genstand der er valgt
             selectedItem: null,
-            // Holder styr på det aktive filter - Alle betyder alle vises som standard
             activeFilter: 'Alle',
-            // Mock-data - falske genstande til at teste kortet med
-            items: [
-                {
-                    id: 1,
-                    title: 'Boremaskine',
-                    category: 'Elektronik',
-                    brand: 'Bosch',
-                    status: 'Tilgængelig',
-                    image: 'https://placehold.co/64x64',
-                    condition: 'Ny',
-                    maxDays: 7,
-                    accessories: 'Extra batteri, bits sæt, oplader',
-                    totalLoans: 12,
-                    activeLoans: 1,
-                    rating: 4.9
-                },
-                {
-                    id: 2,
-                    title: 'Cykel',
-                    category: 'Sport',
-                    brand: null,
-                    status: 'Udlånt',
-                    image: 'https://placehold.co/64x64',
-                    condition: 'Brugt',
-                    maxDays: 3,
-                    accessories: null,
-                    totalLoans: 5,
-                    activeLoans: 1,
-                    rating: 4.2
-                },
-                {
-                    id: 3,
-                    title: 'Hammer',
-                    category: 'Værktøj',
-                    brand: 'Stanley',
-                    status: 'Inaktiv',
-                    image: 'https://placehold.co/64x64',
-                    condition: 'Slidt',
-                    maxDays: 1,
-                    accessories: null,
-                    totalLoans: 8,
-                    activeLoans: 0,
-                    rating: 3.8
-                }
-            ]
+            items: [],
+            loading: false,
+            error: null
         }
     },
     props: {
@@ -76,11 +33,41 @@ export default {
         }
     },
     methods: {
-        // Kaldes når et kort klikkes - finder den valgte genstand ud fra id
+        async fetchItems() {
+            this.loading = true
+            try {
+                const data = await getAllItems()
+                // Map API data til det format komponenterne forventer
+                this.items = data.map(item => ({
+                    id: item.ItemID,
+                    title: item.ItemName,
+                    category: item.CategoryID,
+                    brand: item.Brand,
+                    status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
+                    image: item.images?.[0]?.ImageURL || 'https://placehold.co/64x64',
+                    condition: item.Condition,
+                    maxDays: item.MaxRentPeriodDays,
+                    accessories: item.accessories?.map(a => a.AccessoryName).join(', ') || null,
+                    totalLoans: 0,
+                    activeLoans: 0,
+                    rating: null
+                }))
+            } catch (err) {
+                this.error = 'Kunne ikke hente genstande. Prøv igen.'
+                console.error('Fejl ved hentning af genstande:', err)
+            } finally {
+                this.loading = false
+            }
+        },
         visDetaljer(id) {
             this.selectedItem = this.items.find(item => item.id === id)
         }
     },
+    mounted() {
+        // Hent genstande når komponenten er klar
+        this.fetchItems()
+    },
+
     watch: {
     },
     emits: []
@@ -108,7 +95,7 @@ export default {
         />
 
         <!-- Liste visning - skjules når en genstand er valgt -->
-        <div v-else>
+        <section v-else>
 
             <!-- Sidetitel -->
             <h1 class="page-title">Dine genstande</h1>
@@ -118,22 +105,28 @@ export default {
                 :activeFilter="activeFilter"
                 @filterChanged="activeFilter = $event"
             />
+            <!--- Loading state -->
+            <p v-if="loading" class="loading-state" aria-live="polite">
+                <v-progress-circular indeterminate color="primary" />
+            </p>
+
+            <!-- Error state -->
+            <p v-else-if="error" class="error-text" role="alert">{{ error }}</p>
 
             <!-- Liste af filtrerede kort -->
-            <div class="card-list">
-                <!-- Loop gennem filtrerede genstande og vis et kort for hver -->
-                <GenstandCard
-                    v-for="item in filteredItems"
-                    :key="item.id"
-                    :id="item.id"
-                    :title="item.title"
-                    :category="item.category"
-                    :brand="item.brand"
-                    :status="item.status"
-                    :image="item.image"
-                    @cardClicked="visDetaljer"
-                />
-            </div>
+            <ul class="card-list">
+                <li v-for="item in filteredItems" :key="item.id">
+                    <GenstandCard
+                        :id="item.id"
+                        :title="item.title"
+                        :category="item.category"
+                        :brand="item.brand"
+                        :status="item.status"
+                        :image="item.image"
+                        @cardClicked="visDetaljer"
+                    />
+                </li>
+            </ul>
 
             <!-- Vises når ingen genstande matcher det valgte filter -->
             <p
@@ -145,9 +138,9 @@ export default {
                 Ingen genstande matcher det valgte filter
             </p>
 
-        </div>
+        </section>
 
-        <div class="opret-knap-wrapper">
+        <footer class="opret-knap-wrapper">
             <v-btn
                 color="primary"
                 rounded="lg"
@@ -156,7 +149,7 @@ export default {
             >
                 Opret ny genstand
             </v-btn>
-        </div>
+        </footer>
 
     </main>
 </template>
@@ -185,6 +178,9 @@ export default {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 /* Besked når ingen genstande matcher filteret */
@@ -216,5 +212,17 @@ export default {
   min-height: 100vh;
   padding: var(--space-6) var(--space-4);
   padding-bottom: 90px;
+}
+.loading-state {
+    text-align: center;
+    margin-top: var(--space-8);
+}
+
+.error-text {
+    color: red;
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    text-align: center;
+    margin-top: var(--space-8);
 }
 </style>
