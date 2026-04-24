@@ -3,6 +3,7 @@ const db = require("../models");
 const Item = db.items;
 const ItemImage = db.itemImages;
 const Category = db.categories;
+const ItemAccessory = db.itemAccessories;
 
 // CREATE item (optionally with images)
 exports.create = async (req, res) => {
@@ -41,6 +42,10 @@ exports.findAll = async (req, res) => {
         {
           model: Category,
           attributes: ["CategoryID", "CategoryName"]
+        },
+        {
+          model: ItemAccessory,
+          as: "accessories"
         }
       ]
     });
@@ -68,6 +73,10 @@ exports.findOne = async (req, res) => {
         {
           model: Category,
           attributes: ["CategoryID", "CategoryName"]
+        },
+        {
+          model: ItemAccessory,
+          as: "accessories"
         }
       ]
     });
