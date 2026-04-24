@@ -1,7 +1,7 @@
 <script>
 // Kalder DELETE genstande API for at slette en genstand
 import { deleteItem } from '@/services/itemservice.js'
-
+import { updateItem } from '@/services/itemservice.js'
 export default {
     name: 'GenstandDetail',
     components: {
@@ -12,6 +12,9 @@ export default {
             visSletter: false,
             // Forhinder dobbeltklik på slet-knappen
             sletter: false,
+            //Siden opdateres om du er i redigeringstilstand eller ej
+            isEditing: false, 
+            editedItem: {} 
         }
     },
     props: {
@@ -40,6 +43,10 @@ export default {
         image: {
             type: String,
             required: true
+        },
+        imagePath: {
+            type: String,
+            default: null
         },
         // Genstandens stand - viser hvor god stand genstanden er i
         condition: {
@@ -110,11 +117,84 @@ export default {
             } finally {
                 this.sletter = false
             }
+        },
+
+        startEdit() {
+    this.isEditing = true
+
+    // Gør de nuværende værdier tilgængelige i editedItem, så de kan redigeres i en form
+    this.editedItem = {
+        title: this.title,
+        category: this.category,
+        brand: this.brand,
+        status: this.status,
+        condition: this.condition,
+        maxDays: this.maxDays,
+        accessories: this.accessories,
+        image: this.image,
+        rawImage: this.imagePath,
+        imageBase64: null,
+        imagePreview: null
+    }
+},
+//Gemmer vore redigeringer og sender opdateret data til backend
+async saveEdit() {
+    try {
+        const payload = {
+            ItemName: this.editedItem.title,
+            CategoryName: this.editedItem.category,
+            Brand: this.editedItem.brand,
+            Condition: this.editedItem.condition,
+            MaxRentPeriodDays: this.editedItem.maxDays,
         }
+
+        if (this.editedItem.imageBase64 || this.editedItem.rawImage) {
+            payload.images = [
+                {
+                    ImageURL: this.editedItem.imageBase64 || this.editedItem.rawImage,
+                    IsPrimary: true
+                }
+            ];
+        }
+
+        await updateItem(this.id, payload)
+
+        if (this.editedItem.imageBase64) {
+            this.editedItem.image = this.editedItem.imageBase64
+        }
+
+        this.isEditing = false
+
+        this.$emit('itemUpdated', {
+            ...this.editedItem,
+            image: this.editedItem.imageBase64 || this.editedItem.rawImage || this.image
+        })
+
+    } catch (error) {
+        console.error('Fejl ved opdatering:', error)
+    }
+},
+async handleImageUpload(event) {
+    const file = event.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+
+   reader.onload = () => {
+    const base64 = reader.result
+
+    this.editedItem.imageBase64 = base64
+    this.editedItem.imagePreview = base64
+    this.editedItem.rawImage = null
+    this.editedItem.image = base64
+}
+
+    reader.readAsDataURL(file)
+}
     },
     watch: {
     },
-    emits: ['gåTilbage', 'genstandSlettet']
+    emits: ['gåTilbage', 'genstandSlettet', 'itemUpdated']
 }
 </script>
 
@@ -127,51 +207,142 @@ export default {
             <button class="tilbage-knap" @click="$emit('gåTilbage')">
                 ← Tilbage
             </button>
-            <nav class="header-knapper" aria-label="Rediger eller slet genstand">
-                <!-- Rediger-knap - funktionalitet laves af en anden i gruppen -->
-                <button class="rediger-knap">
-                    ✏️ Rediger
-                </button>
-                <!-- Slet-knap - åbner sletning dialogen -->
-                <button class="slet-knap" @click="åbenSletDialog">
-                    🗑️ Slet
-                </button>
-            </nav>
+          <nav class="header-knapper" aria-label="Rediger eller slet genstand">
+    <!-- Rediger / Gem -->
+    <button v-if="!isEditing" class="rediger-knap" @click="startEdit">
+        ✏️ Rediger
+    </button>
+
+    <button v-else class="rediger-knap" @click="saveEdit">
+        💾 Gem
+    </button>
+
+    <!-- Annuller -->
+    <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
+        ❌ Annuller
+    </button>
+
+    <!-- Slet-knap - åbner sletning dialogen -->
+    <button v-if="!isEditing" class="slet-knap" @click="åbenSletDialog">
+        🗑️ Slet
+    </button>
+</nav>
         </header>
 
-        <!-- Stort billede med status tag i hjørnet -->
-        <figure class="detalje-billede-wrapper">
-            <img
-                :src="image"
-                :alt="`Billede af ${title}`"
-                class="detalje-billede"
-            />
-            <!-- Status tag oven på billedet i nederste højre hjørne -->
-            <span class="detalje-status" :class="statusClass">
-                <span class="detalje-status-prik" aria-hidden="true"></span>
-                {{ status }}
-            </span>
-        </figure>
+      <!-- Stort billede med status tag i hjørnet -->
+<figure class="detalje-billede-wrapper">
 
-        <!-- Genstandens informationer -->
-        <section class="detalje-info">
-            <!-- Titel på genstanden -->
-            <h1 class="detalje-titel">{{ title }}</h1>
-            <!-- Kategori, mærke og stand på samme linje -->
-            <p class="detalje-meta">
-                {{ category }}
-                <span v-if="brand"> · {{ brand }}</span>
-                <span v-if="condition"> · {{ condition }}</span>
-            </p>
-        </section>
+    <!-- VIEW MODE -->
+    <img
+        v-if="!isEditing"
+        :src="image"
+        :alt="`Billede af ${title}`"
+        class="detalje-billede"
+    />
+
+  <!-- EDIT MODE -->
+<div v-else class="detalje-image-edit">
+
+    <!-- file picker instead of URL -->
+    <input
+        type="file"
+        accept="image/*"
+        @change="handleImageUpload"
+    />
+
+    <!-- preview -->
+    <img
+         v-if="editedItem.imageBase64 || image"
+        :src="editedItem.imageBase64 || image"
+        class="detalje-billede"
+    />
+</div>
+
+    <!-- Status tag oven på billedet i nederste højre hjørne -->
+    <span class="detalje-status" :class="statusClass">
+        <span class="detalje-status-prik" aria-hidden="true"></span>
+        {{ status }}
+    </span>
+
+</figure>
+
+       <!-- Genstandens informationer -->
+<section class="detalje-info">
+    <!-- Titel på genstanden -->
+    <h1 v-if="!isEditing" class="detalje-titel">{{ title }}</h1>
+    <v-text-field
+      v-else
+      class="detalje-input"
+      v-model="editedItem.title"
+      label="Navn på genstand"
+      variant="outlined"
+      rounded="xl"
+      color="var(--color-primary)"
+      hide-details="auto"
+    />
+
+    <!-- Kategori, mærke og stand på samme linje -->
+    <p v-if="!isEditing" class="detalje-meta">
+        {{ category }}
+        <span v-if="brand"> · {{ brand }}</span>
+        <span v-if="condition"> · {{ condition }}</span>
+    </p>
+
+    <!-- Edit mode -->
+    <div v-else class="detalje-meta detalje-meta-edit">
+        <v-text-field
+          class="detalje-input"
+          v-model="editedItem.category"
+          label="Kategori"
+          variant="outlined"
+          rounded="xl"
+          color="var(--color-primary)"
+          hide-details="auto"
+        />
+        <v-text-field
+          class="detalje-input"
+          v-model="editedItem.brand"
+          label="Mærke"
+          variant="outlined"
+          rounded="xl"
+          color="var(--color-primary)"
+          hide-details="auto"
+        />
+        <v-text-field
+          class="detalje-input"
+          v-model="editedItem.condition"
+          label="Stand"
+          variant="outlined"
+          rounded="xl"
+          color="var(--color-primary)"
+          hide-details="auto"
+        />
+    </div>
+</section>
 
         <!-- To informationsbokse - max låneperiode og tilbehør -->
         <section class="detalje-bokse" aria-label="Genstandsdetaljer">
 
             <!-- Max låneperiode boks - label øverst, stort tal i midten, enhed nederst -->
             <div class="detalje-boks">
-                <span class="detalje-boks-label-top">Maks. lån</span>
-                <span class="detalje-boks-tal">{{ maxDays }}</span>
+                <span class="detalje-boks-label-top">Maks låne</span>
+               <!-- VIEW MODE -->
+                <span v-if="!isEditing" class="detalje-boks-tal">{{ maxDays }}</span>
+
+                <!-- EDIT MODE -->
+                <v-text-field
+                  v-else
+                  class="detalje-input"
+                  v-model="editedItem.maxDays"
+                  type="number"
+                  min="1"
+                  label="Dage"
+                  variant="outlined"
+                  rounded="xl"
+                  color="var(--color-primary)"
+                  hide-details="auto"
+                />
+
                 <span class="detalje-boks-enhed">dage</span>
             </div>
 
@@ -398,12 +569,38 @@ export default {
     margin: 0 0 6px 0;
 }
 
-/* Kategori, mærke og stand tekst */
+:deep(.v-field) {
+    --v-field-border-width: 3px;
+}
+
+.detalje-input {
+    width: 100%;
+}
+
+.detalje-info > .detalje-input {
+    margin-bottom: var(--space-3);
+}
+
 .detalje-meta {
     font-family: var(--font-body);
     font-size: var(--text-label);
     color: var(--color-secondary);
     margin: 0 0 20px 0;
+}
+
+.detalje-meta.detalje-meta-edit {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.detalje-meta.detalje-meta-edit > .detalje-input {
+    flex: 1 1 220px;
+    min-width: 160px;
+}
+
+.detalje-boks .detalje-input {
+    width: 100%;
 }
 
 /* To bokse side om side */

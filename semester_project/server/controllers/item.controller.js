@@ -92,11 +92,25 @@ exports.update = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const num = await Item.update(req.body, {
+    const [num] = await Item.update(req.body, {
       where: { ItemID: id }
     });
 
-    if (num == 1) {
+    if (req.body.images) {
+      await ItemImage.destroy({ where: { ItemID: id } });
+
+      if (Array.isArray(req.body.images) && req.body.images.length > 0) {
+        const images = req.body.images.map((img, index) => ({
+          ItemID: id,
+          ImageURL: typeof img === 'string' ? img : img.ImageURL,
+          IsPrimary: typeof img === 'string' ? index === 0 : !!img.IsPrimary
+        }));
+
+        await ItemImage.bulkCreate(images);
+      }
+    }
+
+    if (num === 1 || req.body.images) {
       res.send({
         message: "Item was updated successfully."
       });

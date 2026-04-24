@@ -55,6 +55,7 @@ export default {
                     brand: item.Brand,
                     status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
                     image: this.resolveImageUrl(item.images?.[0]?.ImageURL),
+                    rawImage: item.images?.[0]?.ImageURL,
                     condition: item.Condition,
                     maxDays: item.MaxRentPeriodDays,
                     accessories: item.accessories?.map(a => a.AccessoryName).join(', ') || null,
@@ -86,7 +87,15 @@ export default {
                 this.visSletBesked = false
             }, 3000);
 
-        }
+        },
+    async opdaterGenstand() {
+    await this.fetchItems()
+
+    //fetcher item igen for at få de opdaterede data
+    this.selectedItem = this.items.find(
+        item => item.id === this.selectedItem.id
+    )
+},
     },
     mounted() {
         // Hent genstande når komponenten er klar
@@ -120,6 +129,7 @@ export default {
             :brand="selectedItem.brand"
             :status="selectedItem.status"
             :image="selectedItem.image"
+            :imagePath="selectedItem.rawImage"
             :condition="selectedItem.condition"
             :maxDays="selectedItem.maxDays"
             :accessories="selectedItem.accessories"
@@ -128,6 +138,7 @@ export default {
             :rating="selectedItem.rating"
             @gåTilbage="selectedItem = null"
             @genstandSlettet="genstandBlevSlettet"
+            @itemUpdated="opdaterGenstand"
         />
 
         <!-- Liste visning - skjules når en genstand er valgt -->
