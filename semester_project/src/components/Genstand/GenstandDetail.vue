@@ -1,13 +1,25 @@
 <script>
+// Kalder DELETE genstande API for at slette en genstand
+import { deleteItem } from '@/services/itemservice.js'
+
 export default {
     name: 'GenstandDetail',
     components: {
     },
     data() {
         return {
+            //Styrer om sletning dialog er åben
+            visSletter: false,
+            // Forhinder dobbeltklik på slet-knappen
+            sletter: false,
         }
     },
     props: {
+                // ID på genstanden - bruges til sletning
+        id: {
+            type: Number,
+            required: true
+        },
         // Alle oplysninger om den valgte genstand
         title: {
             type: String,
@@ -57,6 +69,7 @@ export default {
             type: Number,
             default: null
         },
+
     },
     computed: {
         // Returnerer den korrekte CSS-klasse baseret på status
@@ -73,15 +86,40 @@ export default {
         }
     },
     methods: {
+        // Åbner sletning dialogen
+        åbenSletDialog() {
+            this.visSletter = true
+        },
+        // Lukker bekræftelsedialog uden at slette
+        annullerSlet() {
+            this.visSletter = false
+        },
+
+        // Metode til at slette genstanden
+        async sletGenstand() {
+            this.sletter = true
+            try {
+                await deleteItem(this.id)
+                this.visSletter = false
+                // Sender navn til GenstandPage for at opdatere listen
+                this.$emit('genstandSlettet', this.title )
+
+                // Håndter succes - f.eks. ved at sende et event til forælderen
+            } catch (error) {
+                console.error('Fejl ved sletning af genstand:', error)
+            } finally {
+                this.sletter = false
+            }
+        }
     },
     watch: {
     },
-    emits: ['gåTilbage']
+    emits: ['gåTilbage', 'genstandSlettet']
 }
 </script>
 
 <template>
-    <div class="detalje-side">
+    <article class="detalje-side">
 
         <!-- Topbar med tilbage-knap og rediger-knap -->
         <header class="detalje-header">
@@ -89,10 +127,16 @@ export default {
             <button class="tilbage-knap" @click="$emit('gåTilbage')">
                 ← Tilbage
             </button>
-            <!-- Rediger-knap - funktionalitet laves af en anden i gruppen -->
-            <button class="rediger-knap">
-                ✏️ Rediger
-            </button>
+            <nav class="header-knapper" aria-label="Rediger eller slet genstand">
+                <!-- Rediger-knap - funktionalitet laves af en anden i gruppen -->
+                <button class="rediger-knap">
+                    ✏️ Rediger
+                </button>
+                <!-- Slet-knap - åbner sletning dialogen -->
+                <button class="slet-knap" @click="åbenSletDialog">
+                    🗑️ Slet
+                </button>
+            </nav>
         </header>
 
         <!-- Stort billede med status tag i hjørnet -->
@@ -186,8 +230,50 @@ export default {
                 <span class="detalje-stat-label">Vurdering</span>
             </div>
         </section>
+        <!-- Sletning bekræftelse dialog - vises når visSletter er true -->
+        <transition name="slet-fade">
+            <aside
+                v-if="visSletter"
+                class="slet-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="slet-dialog-titel"
+            >
+            <article class="slet-dialog-indhold">
+                <!--- Titel med genstandens navn -->
+                <h2 id="slet-dialog-titel" class="slet-dialog-titel">
+                    Slet {{ title }}?
+                </h2>
+                <!--- Bekræftelse besked -->
+                <p class="slet-dialog-tekst">
+                    Denne handling kan ikke fortrydes og genstanden vil blive fjernet permanent.
+                </p>
+                <!--- knapper der annullere eller sletter-->
+                <footer class="slet-dialog-knapper">
+                    <v-btn
+                        variant="text"
+                        @click="annullerSlet"
+                        :disabled="sletter"
+                    >
+                        Annuller
+                    </v-btn>
+                    <!-- Slet - Vuetify error farve (rød), og bruger vores styling -->
+                    <!-- :loading="sletter" viser automatisk en spinner mens backend svarer -->
+                    <v-btn
+                        color="error"
+                        variant="tonal"
+                        @click="sletGenstand"
+                        :disabled="sletter"
+                        :loading="sletter"
+                    >
+                        Slet genstand
+                    </v-btn>
+                </footer>
 
-    </div>
+            </article>
+            </aside>
+        </transition>
+    </article>
 </template>
 
 <style scoped>
@@ -522,6 +608,95 @@ export default {
     font-family: var(--font-body);
     font-size: var(--text-meta);
     color: var(--color-secondary);
+}
+/* Knap-gruppe i headeren - rediger og slet side om side */
+.header-knapper {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+}
+
+/* Slet-knap i header */
+.slet-knap {
+    background: transparent;
+    color: #b91c1c;
+    border: 1.5px solid #b91c1c;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    font-weight: 500;
+    cursor: pointer;
+    padding: var(--space-3) var(--space-4);
+    min-height: 44px;
+    box-sizing: border-box;
+    transition: background 0.15s ease;
+}
+
+.slet-knap:hover {
+    background: rgba(185, 28, 28, 0.08);
+}
+
+/* Dialog overlay - mørkt halvgennemsigtigt lag over hele skærmen */
+.slet-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    padding: var(--space-4);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+/* Dialog indhold - hvid boks der glider op fra bunden */
+.slet-dialog-indhold {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    border-top: 3px solid #b91c1c;
+}
+
+/* Dialog title */
+.slet-dialog-titel {
+    font-family: var(--font-body);
+    font-size: var(--text-h3);
+    font-weight: 500;
+    color: var(--color-neutral);
+    margin: 0 0 var(--space-4) 0;
+}
+
+/* Bekræftelsestekst */
+.slet-dialog-tekst {
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    color: var(--color-secondary);
+    margin: 0 0 var(--space-5) 0;
+    line-height: 1.5;
+}
+
+/* Dialog knapper */
+.slet-dialog-knapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: var(--space-2);
+}
+/* Fade overgang når dialogen åbner og lukker */
+.slet-fade-enter-active,
+.slet-fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.slet-fade-enter-from,
+.slet-fade-leave-to {
+    opacity: 0;
 }
 
 </style>

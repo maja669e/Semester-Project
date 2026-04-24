@@ -17,7 +17,11 @@ export default {
             activeFilter: 'Alle',
             items: [],
             loading: false,
-            error: null
+            error: null,
+            // Tekst i bekræftelsesdialogen ved sletning
+            sletBesked: '',
+            // Styrer visningen af sletningsbekræftelsen
+            visSletBesked: false,
         }
     },
     props: {
@@ -61,6 +65,21 @@ export default {
         },
         visDetaljer(id) {
             this.selectedItem = this.items.find(item => item.id === id)
+        },
+        //Køres når GenstandDetail sender 'genstandSlettet' eventet op
+        genstandBlevSlettet(titel) {
+            // Fjern genstanden fra listen uden at hente data fra backend igen
+            this.items = this.items.filter(item => item.id !== this.selectedItem.id)
+            //gå tilbage til listevisning
+            this.selectedItem =null
+            // Vis bekræftelsesbesked med ganstandes navn
+            this.sletBesked =`${titel} blev slettet`
+            this.visSletBesked = true
+            // Skjul beskeden efter 3 sekunder
+            setTimeout(() => {
+                this.visSletBesked = false
+            }, 3000);
+
         }
     },
     mounted() {
@@ -76,10 +95,20 @@ export default {
 
 <template>
     <main class="page">
+        <!--- Bekræftelsesnotifikation efter sletning -->
+        <output
+        v-if="visSletBesked"
+        class="slet-bekraeftelse"
+        aria-live="polite"
+        aria-atomic="true"
+        >
+            ✅ {{ sletBesked }}
+        </output>
 
         <!-- Vis detaljesiden når en genstand er valgt -->
         <GenstandDetail
             v-if="selectedItem"
+            :id="selectedItem.id"
             :title="selectedItem.title"
             :category="selectedItem.category"
             :brand="selectedItem.brand"
@@ -92,6 +121,7 @@ export default {
             :activeLoans="selectedItem.activeLoans"
             :rating="selectedItem.rating"
             @gåTilbage="selectedItem = null"
+            @genstandSlettet="genstandBlevSlettet"
         />
 
         <!-- Liste visning - skjules når en genstand er valgt -->
@@ -224,5 +254,23 @@ export default {
     font-size: var(--text-label);
     text-align: center;
     margin-top: var(--space-8);
+}
+/* Bekræftelsesnotifikation efter sletning */
+/* position: fixed holder den synlig over alt andet indhold */
+/* bottom: 90px placerer den over den faste "Opret ny genstand" knap i bunden */
+.slet-bekraeftelse {
+    position: fixed;
+    bottom: 90px;
+    left: var(--space-4);
+    right: var(--space-4);
+    background: var(--color-neutral);
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: var(--text-label);
+    font-weight: 500;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    z-index: 200;
 }
 </style>
