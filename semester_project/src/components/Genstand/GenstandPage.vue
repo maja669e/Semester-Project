@@ -37,6 +37,12 @@ export default {
         }
     },
     methods: {
+        resolveImageUrl(rawUrl) {
+            if (!rawUrl) return 'https://placehold.co/64x64'
+            if (rawUrl.startsWith('data:')) return rawUrl
+            if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) return rawUrl
+            return `http://localhost:8080/${rawUrl.replace(/^\/+/, '')}`
+        },
         async fetchItems() {
             this.loading = true
             try {
@@ -48,7 +54,7 @@ export default {
                     category: item.CategoryID,
                     brand: item.Brand,
                     status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
-                    image: item.images?.[0]?.ImageURL || 'https://placehold.co/64x64',
+                    image: this.resolveImageUrl(item.images?.[0]?.ImageURL),
                     condition: item.Condition,
                     maxDays: item.MaxRentPeriodDays,
                     accessories: item.accessories?.map(a => a.AccessoryName).join(', ') || null,

@@ -10,9 +10,10 @@ exports.create = async (req, res) => {
 
     // If images are included in request
     if (req.body.images && req.body.images.length > 0) {
-      const images = req.body.images.map(img => ({
-        ...img,
-        ItemID: item.ItemID
+      const images = req.body.images.map((img, index) => ({
+        ItemID: item.ItemID,
+        ImageURL: typeof img === "string" ? img : img.ImageURL,
+        IsPrimary: typeof img === "string" ? index === 0 : !!img.IsPrimary
       }));
 
       await ItemImage.bulkCreate(images);

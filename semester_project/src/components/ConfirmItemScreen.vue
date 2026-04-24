@@ -75,10 +75,10 @@ export default {
           MaxRentPeriodDays: this.convertLoanPeriodToDays(this.item.loanPeriod),
           IsActive: true,
           UserID: 1, // TODO: erstat med logged-in bruger ID
-         /*  images: this.item.images?.map((img, index) => ({
+          images: this.item.images?.map((img, index) => ({
             ImageURL: img,
             IsPrimary: index === 0,
-          })) || [] ,*/
+          })) || [],
         };
 
         // POST til API

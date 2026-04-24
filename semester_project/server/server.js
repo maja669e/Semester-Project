@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
@@ -12,6 +14,29 @@ app.use(cors(corsOptions));
 // parse requests
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+const seededImagesDir = path.join(__dirname, "../src/assets/images");
+const uploadedImagesDir = path.join(__dirname, "images");
+
+app.get("/images/:fileName", (req, res) => {
+  const fileName = req.params.fileName;
+  const candidates = [
+    path.join(seededImagesDir, fileName),
+    path.join(uploadedImagesDir, fileName)
+  ];
+
+  const hit = candidates.find((p) => fs.existsSync(p));
+  if (!hit) {
+    return res.status(404).send({ message: "Image not found" });
+  }
+
+  return res.sendFile(hit);
+});
+
+// Static images referenced from DB paths like images/example.jpg
+// First serve seeded/mock images from src/assets/images, then fallback to server/images
+app.use("/images", express.static(seededImagesDir));
+app.use("/images", express.static(uploadedImagesDir));
 
 // simple test route
 app.get("/", (req, res) => {

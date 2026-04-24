@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     },
 
     ImageURL: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT('long'),
       allowNull: false
     },
 
