@@ -29,6 +29,7 @@ export default {
   condition: "",
   loanPeriod: "",
   extras: [],
+  categoryID: null,
 
 },
     };
@@ -51,6 +52,8 @@ goToAddDetails(data) {
   this.itemDetails.category = data.category || "";
   this.itemDetails.images = data.images || [];
   this.itemDetails.brand = data.brand || "";
+  this.itemDetails.categoryID = data.categoryID || 1
+
 
   this.currentPage = "addDetails";
   this.currentStep = 2;

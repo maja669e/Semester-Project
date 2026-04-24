@@ -1,5 +1,6 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
+import { getAllCategories } from '@/services/itemservice.js'
 
 export default {
   name: "PageOne",
@@ -14,6 +15,7 @@ export default {
   },
   data() {
     return {
+     categories: [],
     selectedCategory: null,
     customCategory: "",
     uploadedImages: [],
@@ -36,6 +38,14 @@ export default {
     },
   },
   methods: {
+    async fetchCategories() {
+    try {
+        const data = await getAllCategories()
+        this.categories = data
+    } catch (err) {
+        console.error('Fejl ved hentning af kategorier:', err)
+    }
+},
     openFileDialog() {
       this.$refs.fileInput.click();
     },
@@ -103,20 +113,34 @@ export default {
   return valid;
 },
       /*  Gem detaljer og gå videre til næste skridt */
-    next() {
-     if (this.validate()) {
+   next() {
+  if (this.validate()) {
+
+    const selectedCat = this.categories.find(
+      c => c.CategoryName === this.selectedCategory
+    );
+
     const data = {
       category:
         this.selectedCategory === "Andet"
           ? this.customCategory
           : this.selectedCategory,
+
+      categoryID: selectedCat?.CategoryID || null, // ✅ FIXED
+
       images: this.uploadedImages,
       name: this.itemName,
       brand: this.brand
     };
 
+    console.log("Sending data:", data); // DEBUG
+
     this.$emit("go-to-add-details", data);
-  }}
+  }
+}
+  },
+  mounted() {
+    this.fetchCategories()
   },
 };
 </script>
@@ -199,6 +223,21 @@ export default {
        <div v-if="errors.selectedCategory" class="error-text">
          {{ errors.selectedCategory }}
         </div>
+        <v-btn-toggle v-model="selectedCategory"
+  class="category-toggle d-flex flex-wrap ga-2"
+  mandatory>
+    <v-btn
+        v-for="category in categories"
+        :key="category.CategoryID"
+        :value="category.CategoryName"
+        rounded="xl"
+        variant="#eeece8"
+    >
+        {{ category.CategoryName }}
+    </v-btn>
+</v-btn-toggle>
+
+      <!--
       <v-btn-toggle
         v-model="selectedCategory"
         class="category-toggle d-flex flex-wrap ga-2"
@@ -214,9 +253,9 @@ export default {
           >Haveredskaber</v-btn
         >
         <v-btn value="Andet" rounded="xl" variant="#eeece8">Andet</v-btn>
-      </v-btn-toggle>
+      </v-btn-toggle>-->
       
-
+   
       <v-text-field
         v-if="selectedCategory === 'Andet'"
         v-model="customCategory"

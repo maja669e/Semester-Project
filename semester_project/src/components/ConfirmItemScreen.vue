@@ -69,7 +69,7 @@ export default {
         // Byg item objekt til API
         const itemPayload = {
           ItemName: this.item.name,
-          CategoryID: 1, // TODO: map category navn til ID fra database
+          CategoryID: this.item.categoryID || 1,
           Brand: this.item.brand || null,
           Condition: this.item.condition,
           MaxRentPeriodDays: this.convertLoanPeriodToDays(this.item.loanPeriod),
