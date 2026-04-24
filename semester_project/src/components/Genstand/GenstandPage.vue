@@ -51,7 +51,7 @@ export default {
                 this.items = data.map(item => ({
                     id: item.ItemID,
                     title: item.ItemName,
-                    category: item.CategoryID,
+                    category: item.Category?.CategoryName || item.category?.CategoryName || String(item.CategoryID),
                     brand: item.Brand,
                     status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
                     image: this.resolveImageUrl(item.images?.[0]?.ImageURL),
