@@ -101,11 +101,15 @@ exports.update = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const [num] = await Item.update(req.body, {
+    const updateData = { ...req.body };
+    delete updateData.images;
+    delete updateData.accessories;
+
+    const [num] = await Item.update(updateData, {
       where: { ItemID: id }
     });
 
-    if (req.body.images) {
+    if (req.body.images !== undefined) {
       await ItemImage.destroy({ where: { ItemID: id } });
 
       if (Array.isArray(req.body.images) && req.body.images.length > 0) {
@@ -119,7 +123,22 @@ exports.update = async (req, res) => {
       }
     }
 
-    if (num === 1 || req.body.images) {
+    if (req.body.accessories !== undefined) {
+      await ItemAccessory.destroy({ where: { ItemID: id } });
+
+      if (Array.isArray(req.body.accessories) && req.body.accessories.length > 0) {
+        const accessories = req.body.accessories.map(name => ({
+          ItemID: id,
+          AccessoryName: String(name).trim()
+        })).filter(item => item.AccessoryName);
+
+        if (accessories.length > 0) {
+          await ItemAccessory.bulkCreate(accessories);
+        }
+      }
+    }
+
+    if (num === 1 || req.body.images || req.body.accessories) {
       res.send({
         message: "Item was updated successfully."
       });

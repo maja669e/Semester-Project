@@ -130,7 +130,7 @@ export default {
         status: this.status,
         condition: this.condition,
         maxDays: this.maxDays,
-        accessories: this.accessories,
+        accessories: this.accessories || '',
         image: this.image,
         rawImage: this.imagePath,
         imageBase64: null,
@@ -155,6 +155,14 @@ async saveEdit() {
                     IsPrimary: true
                 }
             ];
+        }
+
+        if (this.editedItem.accessories !== undefined) {
+            const accessoriesString = this.editedItem.accessories || '';
+            payload.accessories = accessoriesString
+                .split(',')
+                .map(item => item.trim())
+                .filter(Boolean);
         }
 
         await updateItem(this.id, payload)
@@ -312,6 +320,16 @@ async handleImageUpload(event) {
           class="detalje-input"
           v-model="editedItem.condition"
           label="Stand"
+          variant="outlined"
+          rounded="xl"
+          color="var(--color-primary)"
+          hide-details="auto"
+        />
+        <v-text-field
+          class="detalje-input"
+          v-model="editedItem.accessories"
+          label="Tilbehør"
+          placeholder="Eksempel: oplader, ekstra batteri"
           variant="outlined"
           rounded="xl"
           color="var(--color-primary)"
