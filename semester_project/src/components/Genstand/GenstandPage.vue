@@ -187,7 +187,7 @@ export default {
 
         </section>
 
-        <footer class="opret-knap-wrapper">
+        <footer  v-if="!selectedItem" class="opret-knap-wrapper">
             <v-btn
                 color="primary"
                 rounded="lg"
@@ -196,7 +196,7 @@ export default {
             >
                 Opret ny genstand
             </v-btn>
-        </footer>
+        </footer> 
 
     </main>
 </template>

@@ -221,19 +221,19 @@ async handleImageUpload(event) {
         ✏️ Rediger
     </button>
 
-    <button v-else class="rediger-knap" @click="saveEdit">
+ <!--    <button v-else class="rediger-knap" @click="saveEdit">
         💾 Gem
-    </button>
+    </button> -->
 
     <!-- Annuller -->
-    <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
+  <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
         ❌ Annuller
-    </button>
+    </button> 
 
     <!-- Slet-knap - åbner sletning dialogen -->
-    <button v-if="!isEditing" class="slet-knap" @click="åbenSletDialog">
+   <!--  <button v-if="!isEditing" class="slet-knap" @click="åbenSletDialog">
         🗑️ Slet
-    </button>
+    </button> -->
 </nav>
         </header>
 
@@ -462,6 +462,21 @@ async handleImageUpload(event) {
             </article>
             </aside>
         </transition>
+        
+                <!-- EDIT MODE ACTIONS (bottom) -->
+<section v-if="isEditing" class="edit-actions">
+
+    <!-- Delete button -->
+    <button class="edit-delete" @click="åbenSletDialog">
+        🗑️ Slet genstand
+    </button>
+
+    <!-- Save button -->
+    <button class="edit-save" @click="saveEdit">
+        Gem ændringer
+    </button>
+
+</section>
     </article>
 </template>
 
@@ -912,6 +927,44 @@ async handleImageUpload(event) {
 .slet-fade-enter-from,
 .slet-fade-leave-to {
     opacity: 0;
+}
+
+/* Bottom edit actions container */
+.edit-actions {
+    
+    bottom: 0;
+    background: var(--color-bg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    border-top: 1px solid var(--color-border);
+}
+
+/* Delete button (soft red background like screenshot) */
+.edit-delete {
+    width: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: rgba(185, 28, 28, 0.1);
+    color: #b91c1c;
+    font-weight: 600;
+    font-size: var(--text-body);
+    cursor: pointer;
+}
+
+/* Save button (green bottom button) */
+.edit-save {
+    width: 100%;
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+    font-size: var(--text-body);
+    cursor: pointer;
 }
 
 </style>
